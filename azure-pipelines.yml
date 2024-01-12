@@ -22,7 +22,7 @@ steps:
   inputs:
     command: 'push'
     tags: 'latest'
-    containerRegistry: 'VSazure'
+    containerRegistry: 'vsazure.azurecr.io'
 
 - task: Docker@2
   displayName: 'Docker Compose Up'
