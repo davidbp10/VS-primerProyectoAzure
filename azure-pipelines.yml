@@ -1,0 +1,33 @@
+trigger:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+steps:
+- script: echo 'Starting Docker Build and Compose'
+  displayName: 'Starting Docker Build and Compose'
+
+- task: Docker@2
+  displayName: 'Build Docker Image'
+  inputs:
+    command: 'build'
+    Dockerfile: '**/Dockerfile'
+    tags: 'latest'
+
+- task: Docker@2
+  displayName: 'Push Docker Image to Registry'
+  inputs:
+    command: 'push'
+    tags: 'latest'
+    containerRegistry: 'VSazure'
+
+- task: Docker@2
+  displayName: 'Docker Compose Up'
+  inputs:
+    command: 'composeUp'
+    dockerComposeFile: '**/docker-compose.yml'
+    removeContainersOnPull: true
+    detachedService: true
