@@ -86,6 +86,78 @@ Esta documentación describe el proceso de configuración de un pipeline de inte
 
 #### `main.tf`
 
+```
+terraform {
+    required_providers {
+        docker = {
+            source = "kreuzwerker/docker"
+            version = "~> 3.0.1"
+        }
+    }
+}
+
+// Definir proveedor de Docker
+provider "docker" {}
+
+resource "docker_image" "mariadb" {
+    name = "mariadb:latest"
+    keep_locally = false
+}
+
+resource "docker_image" "wordpress" {
+    name = "wordpress:latest"
+    keep_locally = false
+}
+
+// Definir la red de Docker
+resource "docker_network" "my_network" {
+    name = "my_network"
+}
+
+// Definir el contenedor de MariaDB
+resource "docker_container" "mariadb" {
+    image = docker_image.mariadb.image_id
+    name  = "${var.db_container_name}"
+    networks_advanced {
+        name = "${docker_network.my_network.name}"
+    }
+    env = [
+        "MYSQL_ROOT_PASSWORD=${var.MYSQL_ROOT_PASSWORD}",
+        "MYSQL_DATABASE=${var.MYSQL_DATABASE}",
+    ]
+    volumes {
+        container_path  = "/var/lib/mysql"
+        volume_name     = docker_volume.my_volume.name
+        read_only       = false
+    }
+}
+
+// Definir el contenedor de Wordpress
+resource "docker_container" "wordpress" {
+    image = docker_image.wordpress.image_id
+    name  = "${var.wp_container_name}"
+    ports {
+        internal = 80
+        external = 8080
+    }
+    networks_advanced {
+        name = "${docker_network.my_network.name}"
+    }
+    env = [
+        "WORDPRESS_DB_HOST=${docker_container.mariadb.name}",
+        "WORDPRESS_DB_USER=root",
+        "WORDPRESS_DB_PASSWORD=${var.MYSQL_ROOT_PASSWORD}",
+        "WORDPRESS_DB_NAME=${var.MYSQL_DATABASE}",
+    ]
+}
+
+// Definir el volumen de Docker
+resource "docker_volume" "my_volume" {
+    name = "my_volume"
+}
+
+```
+
 Este archivo define los proveedores necesarios y declara recursos para imágenes de Docker y redes de Docker.
 
 - **Providers**: la configuración de Terraform especifica la versión del proveedor de Docker.
@@ -95,6 +167,32 @@ Este archivo define los proveedores necesarios y declara recursos para imágenes
 
 #### `variables.tf`
 
+```
+variable "MYSQL_ROOT_PASSWORD" {
+    description = "La contraseña del usuario root de MySQL"
+    type        = string
+    default     = "password"
+}
+
+variable "MYSQL_DATABASE" {
+    description = "El nombre de la base de datos de MySQL"
+    type        = string
+    default     = "wordpress"
+}
+
+variable "db_container_name" {
+    description = "El nombre del contenedor de bd"
+    type        = string
+    default     = "mariadb"
+}
+
+variable "wp_container_name" {
+    description = "El nombre del contenedor de wp"
+    type        = string
+    default     = "wordpress"
+}
+```
+
 Este archivo declara variables utilizadas en la configuración de Terraform con valores predeterminados:
 
 - **`MYSQL_ROOT_PASSWORD`**: La contraseña de root para la base de datos MariaDB.
@@ -103,6 +201,32 @@ Este archivo declara variables utilizadas en la configuración de Terraform con 
 - **`wp_container_name`**: El nombre del contenedor para WordPress.
 
 ## Pipeline de configuración Azure (`azure-pipelines.yml`)
+
+```
+trigger:
+- master
+
+pool:
+    vmImage: 'ubuntu-latest'
+
+steps:
+- task: UseDotNet@2
+    inputs:
+        packageType: 'sdk'
+        version: '3.1.x'
+        installationPath: $(Agent.ToolsDirectory)/dotnet
+
+- script: |
+        terraform init
+        terraform validate
+    displayName: 'Terraform Init and Validate'
+
+- script: 'terraform plan -out=tfplan'
+    displayName: 'Terraform Plan'
+
+- script: 'terraform apply -auto-approve tfplan'
+    displayName: 'Terraform Apply'
+```
 
 El archivo `azure-pipelines.yml` define el pipeline de CI/CD en Azure DevOps:
 
