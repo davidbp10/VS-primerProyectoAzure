@@ -1,5 +1,9 @@
 # Azure + GitLab CI/CD Documentation
 
+Participantes de la pareja:
+- David Brea Piñero.
+- Jesús Alberto Mellado Montes.
+
 ## 1. Pipeline Azure Práctica 1.
 Esta documentación proporciona una descripción general de cómo integrar Azure con GitLab CI/CD mediante archivos de configuración específicos. La integración implica configurar un entorno Docker para una aplicación Node.js, usar Docker Compose para definir y ejecutar una aplicación de múltiples contenedores y configurar un archivo YAML de Azure Pipelines para automatizar el proceso de implementación.
 
