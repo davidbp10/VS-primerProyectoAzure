@@ -14,7 +14,7 @@ steps:
   displayName: 'Construir Imagen Docker'
   inputs:
     command: 'build'
-    Dockerfile: '/Dockerfile'
+    Dockerfile: 'Dockerfile'
     tags: 'latest'
 
 - task: Docker@2
@@ -28,6 +28,6 @@ steps:
   displayName: 'Docker Compose Up'
   inputs:
     command: 'composeUp'
-    dockerComposeFile: '/docker-compose.yml'
+    dockerComposeFile: 'docker-compose.yml'
     removeContainersOnPull: true
     detachedService: true
