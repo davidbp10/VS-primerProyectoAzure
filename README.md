@@ -1,6 +1,6 @@
 # Azure + GitLab CI/CD Documentation
 
-## Pipeline Azure Práctica 1.
+## 1. Pipeline Azure Práctica 1.
 Esta documentación proporciona una descripción general de cómo integrar Azure con GitLab CI/CD mediante archivos de configuración específicos. La integración implica configurar un entorno Docker para una aplicación Node.js, usar Docker Compose para definir y ejecutar una aplicación de múltiples contenedores y configurar un archivo YAML de Azure Pipelines para automatizar el proceso de implementación.
 
 ### Explicación Dockerfile
@@ -78,7 +78,7 @@ El pipeline automatiza los siguientes pasos:
 - Utiliza Docker Compose para implementar la aplicación de múltiples contenedores en Azure Container Instances.
 
 
-## Pipeline Azure Práctica 2.
+## 2. Pipeline Azure Práctica 2.
 
 Esta documentación describe el proceso de configuración de un pipeline de integración e implementación continuas (CI/CD) mediante Azure Pipelines para trabajar con Terraform para la administración de infraestructura. El pipeline automatiza la implementación y administración de recursos en Azure mediante archivos de configuración de Terraform.
 
@@ -86,7 +86,7 @@ Esta documentación describe el proceso de configuración de un pipeline de inte
 
 #### `main.tf`
 
-```
+```tf
 terraform {
     required_providers {
         docker = {
@@ -167,7 +167,7 @@ Este archivo define los proveedores necesarios y declara recursos para imágenes
 
 #### `variables.tf`
 
-```
+```tf
 variable "MYSQL_ROOT_PASSWORD" {
     description = "La contraseña del usuario root de MySQL"
     type        = string
@@ -202,7 +202,7 @@ Este archivo declara variables utilizadas en la configuración de Terraform con 
 
 ### Pipeline de configuración Azure (`azure-pipelines.yml`)
 
-```
+```yml
 trigger:
 - master
 
@@ -241,3 +241,73 @@ El archivo `azure-pipelines.yml` define el pipeline de CI/CD en Azure DevOps:
    - **Terraform Apply**: Aplica los cambios descritos por el plan para alcanzar el estado deseado de la configuración.
 
 Durante la ejecución del pipeline, se ejecutan comandos de Terraform para planificar y aplicar cambios en la infraestructura. Se recomienda almacenar el archivo de estado de Terraform en un backend remoto como Azure Blob Storage para compartirlo y bloquearlo durante las operaciones para evitar modificaciones de estado simultáneas.
+
+## 3. Pipeline Gitlab
+Esta documentación proporciona una descripción general de como configurar un proceso de Integración Continua (CI) y Despliegue Continuo (CD) con GitLab. Este proyecto implica la transformación de datos, generación de gráficos, documentación y publicación en GitHub Pages.
+
+### Explicación script_grafica.py
+El script proporcionado a continuación realiza una gráfica simple de los datos que encontramos en el archivo proporcionado a través del campus virtual `SensorData.csv`. Tanto el fichero `SensorData.csv` como el script `script_grafica.py` deben estar en nuestro repositorio de Gitlab y en el mismo directorio.
+
+```py
+import matplotlib.pyplot as plt
+import pandas as pd
+
+# Leer los datos del archivo CSV
+df = pd.read_csv('SensorData.csv')
+
+# Especificar las columnas que deseas graficar, por ejemplo 'timestamp' y 'temperatureSHT31'
+# Asegúrate de reemplazar estas columnas con los nombres de columna correctos de tu archivo CSV
+x = df['timestamp']
+y = df['temperatureSHT31']
+
+# Crear la gráfica
+plt.plot(x, y)
+plt.title('Gráfico de SensorData')
+plt.xlabel('Timestamp')
+plt.ylabel('Temperatura SHT31')
+
+# Guardar la gráfica como una imagen
+plt.savefig('grafica_ejemplo.png')
+
+# Mostrar la gráfica (opcional)
+plt.show()
+```
+
+
+### Explicación del Pipeline de GitLab
+El archivo gitlab-pipelines.yml es un archivo de configuración de GitLab CI/CD  en formato YAML. Este archivo genera la gráfica de los datos, la documentación a partir del archivo Markdown README. del repositorio, incrusta en ella la gráfica de los datos y por último genera un artefacto en formato HTML a partir del `README.md`.
+```yaml
+image: python:3.9
+
+stages:
+  - plot
+  - deploy
+
+before_script:
+  - pip install --upgrade pip
+  - pip install matplotlib numpy pandas
+
+plot:
+  stage: plot
+  script:
+    - python script_grafica.py  # Este script genera grafica_ejemplo.png
+  artifacts:
+    paths:
+      - grafica_ejemplo.png  # Esto asegura que grafica_ejemplo.png esté disponible para la siguiente etapa
+
+deploy:
+  stage: deploy
+  script:
+    # Instala pandoc
+    - apt-get update && apt-get install -y pandoc
+    # Genera el HTML del Markdown
+    - pandoc README.md --self-contained -o documentation.html #Para que se incruste la grafica, debemos añadir <![](grafica_ejemplo.png)> en el README.md
+  artifacts:
+    paths:
+      - documentation.html  # The HTML file now includes the embedded image
+```
+
+Antes de realizar cada trabajo en el pipeline se ejecutará la configuración previa (`before_script`) necesaria para ejecutar el script de generación de gráficos.
+El pipeline automatiza los siguientes pasos:
+- Crea la gráfica usando el script de python `script_grafica.py` y asegura que el fichero `grafica_ejemplo.png` esté disponible para las siguientes etapas.
+- Genera el artefaco Html a partir del Markdown y de la imagen.
