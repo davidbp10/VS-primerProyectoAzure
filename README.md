@@ -76,3 +76,44 @@ El pipeline automatiza los siguientes pasos:
 - Crea la imagen de Docker usando Dockerfile.
 : envía la imagen creada al Azure Container Registry especificado.
 - Utiliza Docker Compose para implementar la aplicación de múltiples contenedores en Azure Container Instances.
+
+
+## Pipeline Azure Práctica 2.
+
+Esta documentación describe el proceso de configuración de un pipeline de integración e implementación continuas (CI/CD) mediante Azure Pipelines para trabajar con Terraform para la administración de infraestructura. El pipeline automatiza la implementación y administración de recursos en Azure mediante archivos de configuración de Terraform.
+
+### Ficheros de configuración de Terraform (`*.tf`)
+
+#### `main.tf`
+
+Este archivo define los proveedores necesarios y declara recursos para imágenes de Docker y redes de Docker.
+
+- **Providers**: la configuración de Terraform especifica la versión del proveedor de Docker.
+- **Docker Images**: Se definen los recursos para las imágenes Docker `mariadb` y `wordpress`, especificando los nombres de las imágenes y la decisión de no mantenerlas localmente.
+- **Docker Network**: se crea un recurso de red Docker llamado `my_network`.
+- **Docker Containers**: se definen dos recursos de contenedores Docker para `mariadb` y `wordpress`, utilizando las imágenes y la red de Docker definidas anteriormente. Están configurados con variables de entorno y volúmenes para el almacenamiento de datos persistente.
+
+#### `variables.tf`
+
+Este archivo declara variables utilizadas en la configuración de Terraform con valores predeterminados:
+
+- **`MYSQL_ROOT_PASSWORD`**: La contraseña de root para la base de datos MariaDB.
+- **`MYSQL_DATABASE`**: El nombre de la base de datos MySQL.
+- **`db_container_name`**: El nombre del contenedor para MariaDB.
+- **`wp_container_name`**: El nombre del contenedor para WordPress.
+
+## Pipeline de configuración Azure (`azure-pipelines.yml`)
+
+El archivo `azure-pipelines.yml` define el pipeline de CI/CD en Azure DevOps:
+
+- **Trigger**: el pipeline se activa al confirmarse en la rama `master`.
+- **Pool**: especifica el uso de la última imagen de VM de Ubuntu.
+- **Pasos**:
+   - **NET Core SDK**: Instala una versión específica del SDK de .NET Core necesaria para la canalización.
+   - **Terraform Tool Installer**: Instala una versión de Terraform específica.
+   - **Terraform Init**: Inicializa un directorio de trabajo de Terraform nuevo o existente realizando varios pasos de inicialización.
+   - **Terraform Validate**: valida la corrección de los archivos de Terraform.
+   - **Terraform Plan**: Crea un plan de ejecución, determinando qué acciones son necesarias para lograr el estado deseado especificado en los archivos de configuración.
+   - **Terraform Apply**: Aplica los cambios descritos por el plan para alcanzar el estado deseado de la configuración.
+
+Durante la ejecución del pipeline, se ejecutan comandos de Terraform para planificar y aplicar cambios en la infraestructura. Se recomienda almacenar el archivo de estado de Terraform en un backend remoto como Azure Blob Storage para compartirlo y bloquearlo durante las operaciones para evitar modificaciones de estado simultáneas.
