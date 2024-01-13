@@ -6,9 +6,6 @@ trigger:
 pool:
   vmImage: 'ubuntu-latest'
 
-variables:
-  dockerRegistryServiceConnection: 'vsazure.azurecr.io'
-
 steps:
 - script: echo 'Iniciando Docker Build y Compose'
   displayName: 'Iniciando Docker Build y Compose'
@@ -25,7 +22,7 @@ steps:
   inputs:
     command: 'push'
     tags: 'latest'
-    containerRegistry: $(dockerRegistryServiceConnection)
+    dockerRegistryServiceConnection: 'vsazure.azurecr.io'
 
 - task: Docker@2
   displayName: 'Docker Compose Up'
