@@ -3,7 +3,7 @@
 ## Pipeline Azure Práctica 1.
 Esta documentación proporciona una descripción general de cómo integrar Azure con GitLab CI/CD mediante archivos de configuración específicos. La integración implica configurar un entorno Docker para una aplicación Node.js, usar Docker Compose para definir y ejecutar una aplicación de múltiples contenedores y configurar un archivo YAML de Azure Pipelines para automatizar el proceso de implementación.
 
-### Dockerfile Explanation
+### Explicación Dockerfile
 
 El Dockerfile proporcionado configura un entorno Node.js, instala dependencias y define el comando para ejecutar la aplicación.
 
@@ -17,7 +17,7 @@ EXPOSE 3000                 # Make port 3000 available to the outside of the con
 CMD ["npm", "start"]        # Define the command to run the application
 ```
 
-### Docker-Compose Explanation
+### Explicación Docker-Compose
 
 El archivo `docker-compose.yml` define los servicios que componen la aplicación. En este ejemplo, especifica un único servicio para la aplicación web.
 
@@ -30,7 +30,7 @@ services:
       - "3000:3000"        # Map port 3000 of the host to port 3000 in the container
 ```
 
-### Azure Pipelines YAML Explanation
+### Explicación Pipeline de Azure
 
 El archivo `azure-pipelines.yml` define la canalización de CI/CD para crear, enviar e implementar la imagen de Docker en Azure.
 
@@ -200,7 +200,7 @@ Este archivo declara variables utilizadas en la configuración de Terraform con 
 - **`db_container_name`**: El nombre del contenedor para MariaDB.
 - **`wp_container_name`**: El nombre del contenedor para WordPress.
 
-## Pipeline de configuración Azure (`azure-pipelines.yml`)
+### Pipeline de configuración Azure (`azure-pipelines.yml`)
 
 ```
 trigger:
