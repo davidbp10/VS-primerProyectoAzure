@@ -14,7 +14,7 @@ steps:
   displayName: 'Construir Imagen Docker'
   inputs:
     command: 'build'
-    Dockerfile: 'Dockerfile'
+    Dockerfile: '**/Dockerfile'
     tags: 'latest'
 
 - task: Docker@2
@@ -22,12 +22,12 @@ steps:
   inputs:
     command: 'push'
     tags: 'latest'
-    containerRegistry: 'c71a7aa9-d0e5-4156-817e-86c2914a7461'
+    containerRegistry: 'vsazure.azurecr.io'
 
 - task: Docker@2
   displayName: 'Docker Compose Up'
   inputs:
     command: 'composeUp'
-    dockerComposeFile: 'docker-compose.yml'
+    dockerComposeFile: '**/docker-compose.yml'
     removeContainersOnPull: true
     detachedService: true
